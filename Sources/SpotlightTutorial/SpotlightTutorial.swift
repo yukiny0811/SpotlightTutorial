@@ -34,7 +34,7 @@ extension View {
 
 public struct Tutorial: Hashable {
     let spaceName: String = UUID().uuidString
-    var rect: CGRect = .zero
+    internal(set) public var rect: CGRect = .zero
     private(set) public var isSpotted = false
     let padding: CGFloat
     let cornerRadius: CGFloat
