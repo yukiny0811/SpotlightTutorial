@@ -8,25 +8,21 @@ struct AbsoluteFrameInSpaceModifier: ViewModifier {
     @Binding var rect: CGRect
 
     func body(content: Content) -> some View {
-        content
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .preference(key: FramePreferenceKey.self,
-                                    value: proxy.frame(in: .named(space)))
-                }
-            )
-            .onPreferenceChange(FramePreferenceKey.self) { rect = $0 }
+        content.overlay(
+            GeometryReader { proxy in
+                let r = proxy.frame(in: .named(space))
+                Color.clear
+                    .onAppear { rect = r }
+                    .onChange(of: r) {
+                        rect = $0
+                    }
+            }
+            .allowsHitTesting(false)
+        )
     }
 }
 
-private struct FramePreferenceKey: PreferenceKey {
-    static let defaultValue: CGRect = .zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
-}
-
 extension View {
-    // 同じ座標空間名を overlay 側と共有してね
     public func getAbsoluteFrame(in space: AnyHashable, rect: Binding<CGRect>) -> some View {
         modifier(AbsoluteFrameInSpaceModifier(space: space, rect: rect))
     }
